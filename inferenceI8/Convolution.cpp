@@ -28,72 +28,80 @@ bool Convolution::execute(
 
 	TensorShape output_shape(width_out, width_out, weight_shape.k);
 	output.SetShape(output_shape);
-	int xi = 0;
-	int yi = 0;
-	int elem = 0;
-	int w_elem = 0;
+	
 	const int stride = input_shape.w;
-	int8_t* p_wght = NULL;
-	int8_t* p_inpt = NULL;
+	
 	std::vector<std::vector<int32_t> > accumulator;
 	accumulator.resize(weight_shape.k);
 	const int output_elements = width_out*width_out;
-	int out_index = 0;
+	
 
-	for (int k = 0; k < weight_shape.k; ++k) 
+#pragma omp parallel default(none) shared(weight_shape,accumulator,input,weight,param)
 	{
-		std::vector<int32_t> &accumulate = accumulator[k];
-		accumulate.resize(output_elements);		
+#pragma omp for	schedule(dynamic) nowait
+		for (int k = 0; k < weight_shape.k; ++k)
+		{
+			int8_t* p_wght = NULL;
+			int8_t* p_inpt = NULL;
+			int xi = 0;
+			int yi = 0;
+			int elem = 0;
+			int w_elem = 0;
+			int out_index = 0;
 
-		for (int ky = -param.padding; ky <= param.padding; ++ky) {
-			for (int kx = -param.padding; kx <= param.padding; ++kx) {
-				w_elem = (ky + param.padding) * weight_shape.w;
-				w_elem += (kx + param.padding);
+			std::vector<int32_t> &accumulate = accumulator[k];
+			accumulate.resize(output_elements);
 
-				weight.GetElement(w_elem, k, p_wght);
+			for (int ky = -param.padding; ky <= param.padding; ++ky) {
+				for (int kx = -param.padding; kx <= param.padding; ++kx) {
+					w_elem = (ky + param.padding) * weight_shape.w;
+					w_elem += (kx + param.padding);
 
-				for (int yo = 0; yo < width_out; ++yo)
-				{
-					yi = param.stride * yo + ky;
+					weight.GetElement(w_elem, k, p_wght);
 
-					for (int xo = 0; xo < width_out; ++xo)
+					for (int yo = 0; yo < width_out; ++yo)
 					{
-						xi = xo * param.stride + kx;
+						yi = param.stride * yo + ky;
 
-						elem = yi * stride + xi;
-						out_index = yo * width_out + xo;
-
-						if (xi >= 0 && xi < input_shape.w && yi >= 0 && yi < input_shape.h)
+						for (int xo = 0; xo < width_out; ++xo)
 						{
-							input.GetElement(elem, 0, p_inpt);
+							xi = xo * param.stride + kx;
 
-							for (int c = 0; c < input_shape.c; ++c)
-								accumulate[out_index] += (static_cast<int32_t>(p_inpt[c]) * static_cast<int32_t>(p_wght[c]));
+							elem = yi * stride + xi;
+							out_index = yo * width_out + xo;
+
+							if (xi >= 0 && xi < input_shape.w && yi >= 0 && yi < input_shape.h)
+							{
+								input.GetElement(elem, 0, p_inpt);
+
+								for (int c = 0; c < input_shape.c; ++c)
+									accumulate[out_index] += (static_cast<int32_t>(p_inpt[c]) * static_cast<int32_t>(p_wght[c]));
+							}
 						}
 					}
 				}
 			}
-		}
 
-		// Quantisation
-		ChannelQuantisation &quant = param.quantisation[k];
+			// Quantisation
+			ChannelQuantisation &quant = param.quantisation[k];
 
-		for (int o = 0; o < output_elements; ++o)
-		{
-			accumulate[o] += quant.bias;
-			accumulate[o] *= quant.scale;
-			accumulate[o] >>= quant.right_shift;
+			for (int o = 0; o < output_elements; ++o)
+			{
+				accumulate[o] += quant.bias;
+				accumulate[o] *= quant.scale;
+				accumulate[o] >>= quant.right_shift;
 
-			if (accumulate[o] > param.clamp_high)
-				accumulate[o] = param.clamp_high;
-			else if(accumulate[o] < param.clamp_low)
-				accumulate[o] = param.clamp_low;
+				if (accumulate[o] > param.clamp_high)
+					accumulate[o] = param.clamp_high;
+				else if (accumulate[o] < param.clamp_low)
+					accumulate[o] = param.clamp_low;
+			}
 		}
 	}
-
 	// Write output
 	int y_offset = 0;
 	int8_t* p_out = NULL;
+	int out_index = 0;
 
 	for (int yo = 0; yo < width_out; ++yo)
 	{
