@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Tensor.h"
 #include "Convolution.h"
+#include "MsTimer.h"
 using namespace GB;
 
 int main()
@@ -25,7 +26,12 @@ int main()
 	param.stride = 2;
 	param.quantisation.resize(wt_shape.k);
 	Tensor output;
+	MsTimer ms_timer;
+	ms_timer.start();
 	conv.execute(act, wgt, output, param);
+	ms_timer.stop();
+	
+	printf("inference8: completed in %lld ms.\n", ms_timer.elapsed());
 	return 0;
 }
 
