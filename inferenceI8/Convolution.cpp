@@ -21,13 +21,11 @@ bool Convolution::execute(
 	int max_threads = 0;
 	max_threads = omp_get_max_threads();
 	omp_set_num_threads(max_threads);
-	printf("Defined Max threads: %d\n", omp_get_max_threads());
-
-#pragma omp parallel
-	{
-		int tid = omp_get_thread_num();
-		printf("Convolution Thread! #%d\n", tid);
-	}
+//#pragma omp parallel
+//	{
+//		int tid = omp_get_thread_num();
+//		printf("Convolution Thread! #%d\n", tid);
+//	}
 #endif  
 
 	const TensorShape input_shape = input.GetShape();
@@ -113,23 +111,27 @@ bool Convolution::execute(
 			}
 		}
 	}
-	// Write output
-	int y_offset = 0;
-	int8_t* p_out = NULL;
-	int out_index = 0;
 
-	for (int yo = 0; yo < width_out; ++yo)
+
+	// Write output	
+#pragma omp parallel default(none) shared(accumulator,output,width_out)
 	{
-		y_offset = yo * width_out;
-
-		for (int xo = 0; xo < width_out; ++xo)
+#pragma omp for	schedule(dynamic) nowait
+		for (int yo = 0; yo < width_out; ++yo)
 		{
-			out_index = y_offset + xo;
-			output.GetElement(out_index, 0, p_out);
-
-			for (int k = 0; k < output_shape.c; ++k)
+			int y_offset = yo * width_out;
+			int8_t* p_out = NULL;
+			int out_index = 0;
+			
+			for (int xo = 0; xo < width_out; ++xo)
 			{
-				p_out[k] = static_cast<int8_t>(accumulator[k][out_index]);
+				out_index = y_offset + xo;
+				output.GetElement(out_index, 0, p_out);
+
+				for (int k = 0; k < output_shape.c; ++k)
+				{
+					p_out[k] = static_cast<int8_t>(accumulator[k][out_index]);
+				}
 			}
 		}
 	}

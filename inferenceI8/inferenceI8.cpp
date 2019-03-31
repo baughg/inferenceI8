@@ -14,10 +14,10 @@ int main()
 	TensorShape wt_shape(7, 7, 3, 64);
 
 	act.SetShape(act_shape);
-	act.FillRand();
+	//act.FillRand();
 
 	wgt.SetShape(wt_shape);
-	wgt.FillRand();
+	//wgt.FillRand();
 
 	Convolution conv;
 	ConvParam param;
@@ -25,7 +25,7 @@ int main()
 	param.stride = 2;
 	param.quantisation.resize(wt_shape.k);
 	Tensor output;
-	//conv.execute(act, wgt, output, param);
+	conv.execute(act, wgt, output, param);
 	return 0;
 }
 
