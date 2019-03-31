@@ -1,4 +1,5 @@
 #include "Convolution.h"
+#include <omp.h>
 
 using namespace GB;
 
@@ -15,6 +16,20 @@ Convolution::~Convolution()
 bool Convolution::execute(
 	Tensor &input, Tensor &weight, Tensor &output, ConvParam &param)
 {
+
+#ifdef _OPENMP	
+	int max_threads = 0;
+	max_threads = omp_get_max_threads();
+	omp_set_num_threads(max_threads);
+	printf("Defined Max threads: %d\n", omp_get_max_threads());
+
+#pragma omp parallel
+	{
+		int tid = omp_get_thread_num();
+		printf("Convolution Thread! #%d\n", tid);
+	}
+#endif  
+
 	const TensorShape input_shape = input.GetShape();
 	const TensorShape weight_shape = weight.GetShape();
 

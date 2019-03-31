@@ -25,7 +25,7 @@ int main()
 	param.stride = 2;
 	param.quantisation.resize(wt_shape.k);
 	Tensor output;
-	conv.execute(act, wgt, output, param);
+	//conv.execute(act, wgt, output, param);
 	return 0;
 }
 
