@@ -39,7 +39,11 @@ bool Convolution::execute(
 	width_out /= param.stride;
 	width_out++;
 
-	TensorShape output_shape(width_out, width_out, weight_shape.k);
+	int height_out = input_shape.h - weight_shape.h + 2 * param.padding;
+	height_out /= param.stride;
+	height_out++;
+
+	TensorShape output_shape(width_out, height_out, weight_shape.k);
 	output.SetShape(output_shape);
 	
 	const int stride = input_shape.w;
@@ -76,19 +80,24 @@ bool Convolution::execute(
 					{
 						yi = param.stride * yo + ky;
 
+						if (yi < 0 || yi >= input_shape.h)
+							continue;
+
 						for (int xo = 0; xo < width_out; ++xo)
 						{
 							xi = xo * param.stride + kx;
 
+							if (xi < 0 || xi >= input_shape.w)
+								continue;
+
 							elem = yi * stride + xi;
 							out_index = yo * width_out + xo;
 
-							if (xi >= 0 && xi < input_shape.w && yi >= 0 && yi < input_shape.h)
-							{
-								input.GetElement(elem, 0, p_inpt);
 
-								for (int c = 0; c < input_shape.c; ++c)
-									accumulate[out_index] += (static_cast<int32_t>(p_inpt[c]) * static_cast<int32_t>(p_wght[c]));
+							input.GetElement(elem, 0, p_inpt);
+
+							for (int c = 0; c < input_shape.c; ++c) {
+								accumulate[out_index] += (static_cast<int32_t>(p_inpt[c]) * static_cast<int32_t>(p_wght[c]));
 							}
 						}
 					}
