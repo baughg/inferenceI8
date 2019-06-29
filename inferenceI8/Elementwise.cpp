@@ -47,8 +47,8 @@ bool Elementwise::execute(
 
 		for (int z = 0; z < Z; ++z)
 		{
-			sum = p_a[z] + p_b[z];
-
+			f(p_a[z], p_b[z], sum);
+			
 			Tensor::Quantise(
 				sum,
 				param.quantisation[z],
