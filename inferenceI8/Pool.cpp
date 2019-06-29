@@ -38,14 +38,17 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 	int xOffset = 0;
 	int elem = 0;
 	int32_t* p_in = NULL;
-
-	for (int yo = 0; yo < H; ++yo)
+	int32_t* p_out = NULL;
+	std::vector<int32_t> maxValue(C);
+	
+	for (int xo = 0; xo < W; ++xo)	
 	{
-		yOffset = yo * stride;
+		xOffset = xo * stride;		
 
-		for (int xo = 0; xo < W; ++xo)
+		for (int yo = 0; yo < H; ++yo)
 		{
-			xOffset = xo * stride;
+			std::fill(maxValue.begin(), maxValue.end(), INT32_MIN);
+			yOffset = yo * stride;
 
 			for (int ky = 0; ky < kernelSize; ++ky)
 			{
@@ -64,8 +67,21 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 					elem = yi * input_shape.w + xi;
 					input.GetElement32(elem, 0, p_in);
 
-
+					for (int c = 0; c < C; ++c)
+					{
+						if (p_in[c] > maxValue[c])
+							maxValue[c] = p_in[c];
+					}
 				}
+			}
+
+			// done kernel iteration
+			elem = yo * output_shape.w + xo;
+			output.GetElement32(elem, 0, p_out);
+			
+			for (int c = 0; c < C; ++c)
+			{
+				p_out[c] = maxValue[c];				
 			}
 		}
 	}

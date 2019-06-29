@@ -39,9 +39,33 @@ void Tensor::FillRand()
 	int v = 0;
 	int8_t &vI8 = *reinterpret_cast<int8_t*>(&v);
 
-	for (size_t p = 0; p < data_size; ++p) {
-		v = rand() % 256;
-		data_[p] = vI8;
+	
+
+	if (i32_word_)
+	{
+		const size_t data_points = data_size >> 2;
+		int32_t* p_data = reinterpret_cast<int32_t*>(&data_[0]);
+		int rnd = 0;
+		bool neg = false;
+
+		for (size_t p = 0; p < data_points; ++p)
+		{
+			rnd = rand() - (RAND_MAX >> 1);
+			neg = rnd < 0;
+			rnd &= 0xff;
+
+			if (neg)
+				rnd *= -1;
+
+			p_data[p] = rnd;
+		}
+	}
+	else
+	{
+		for (size_t p = 0; p < data_size; ++p) {
+			v = rand() % 256;
+			data_[p] = vI8;
+		}
 	}
 }
 
