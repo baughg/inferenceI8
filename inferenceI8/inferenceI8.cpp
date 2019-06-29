@@ -5,6 +5,7 @@
 #include "Tensor.h"
 #include "Convolution.h"
 #include "Pool.h"
+#include "Elementwise.h"
 #include "MsTimer.h"
 using namespace GB;
 
@@ -40,6 +41,8 @@ int main()
 	pool_param.kernel_shape = poolKernel;
 	Pool pool;
 	pool.max_execute(output, pool_output, pool_param);
+
+
 	printf("inference8: completed in %lld ms.\n", ms_timer.elapsed());
 	return 0;
 }

@@ -10,11 +10,17 @@ Elementwise::~Elementwise()
 {
 }
 
-bool Elementwise::add_execute(
+void add(const int32_t &a, const int32_t &b, int32_t &c)
+{
+	c = a + b;
+}
+
+bool Elementwise::execute(
 	Tensor &input_a,
 	Tensor &input_b,
 	Tensor &output,
-	ElopsParam &param)
+	ElopsParam &param,
+	void(*f)(const int32_t &a, const int32_t &b, int32_t &c ))
 {
 	const TensorShape &input_shape_a = input_a.GetShape();
 	const TensorShape &input_shape_b = input_b.GetShape();
@@ -31,7 +37,7 @@ bool Elementwise::add_execute(
 	int32_t* p_b = NULL;
 	int32_t* p_out = NULL;
 	const int Z = input_shape_a.c;
-	
+
 	for (int elem = 0; elem < elem_count; ++elem)
 	{
 		input_a.GetElement32(elem, 0, p_a);
@@ -41,7 +47,7 @@ bool Elementwise::add_execute(
 
 		for (int z = 0; z < Z; ++z)
 		{
-			sum = p_a[z] + p_b[z];			
+			sum = p_a[z] + p_b[z];
 
 			Tensor::Quantise(
 				sum,
@@ -53,4 +59,13 @@ bool Elementwise::add_execute(
 		}
 	}
 	return true;
+}
+
+bool Elementwise::add_execute(
+	Tensor &input_a,
+	Tensor &input_b,
+	Tensor &output,
+	ElopsParam &param)
+{
+	return execute(input_a, input_b, output, param, add);
 }
