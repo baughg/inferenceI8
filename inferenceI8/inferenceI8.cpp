@@ -36,7 +36,7 @@ int main()
 	Tensor pool_output(NULL,true);
 	PoolParam pool_param;
 	pool_param.stride = 2;
-	pool_param.padding = 1;
+	pool_param.padding = 0;
 	pool_param.kernel_shape = poolKernel;
 	Pool pool;
 	pool.max_execute(output, pool_output, pool_param);
