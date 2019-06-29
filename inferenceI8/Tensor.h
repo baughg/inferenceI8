@@ -59,6 +59,11 @@ namespace GB {
 		TensorShape GetShape() const;
 		bool GetElement(const int &elem, const int &k, int8_t* &p_data);
 		bool GetElement32(const int &elem, const int &k, int32_t* &p_data);
+		static void Quantise(
+			int32_t &q, 
+			const ChannelQuantisation &quant,
+			const int &clamp_high,
+			const int &clamp_low);
 	private:
 		TensorShape shape_;
 		std::vector<int8_t> data_;

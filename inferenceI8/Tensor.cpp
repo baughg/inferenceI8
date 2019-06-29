@@ -74,6 +74,29 @@ TensorShape Tensor::GetShape() const
 	return shape_;
 }
 
+void Tensor::Quantise(
+	int32_t &q, 
+	const ChannelQuantisation &quant,
+	const int &clamp_high,
+	const int &clamp_low)
+{
+	q += quant.bias;
+	q *= quant.scale;
+
+	int64_t scalem_stage_ext = static_cast<int64_t>(q) << 1;
+	int64_t round_stage = scalem_stage_ext >> quant.right_shift;
+	int64_t round_stage_div = 0;
+	round_stage_div = (round_stage == -1) ? 0LL : round_stage;
+
+	int64_t scalem_stage_trunc = round_stage_div >> 1;
+	q = static_cast<int32_t>(scalem_stage_trunc);
+
+
+	if (q > clamp_high)
+		q = clamp_high;
+	else if (q < clamp_low)
+		q = clamp_low;
+}
 
 bool Tensor::GetElement(const int &elem, const int &k,int8_t* &p_data)
 {
