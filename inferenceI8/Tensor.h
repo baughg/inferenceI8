@@ -39,15 +39,18 @@ namespace GB {
 	class Tensor
 	{
 	public:
-		Tensor();
+		Tensor(int8_t* data_ptr = NULL);
 		~Tensor();
 		void SetShape(TensorShape shape);
 		void FillRand();
 		TensorShape GetShape() const;
 		bool GetElement(const int &elem, const int &k, int8_t* &p_data);
+		bool GetElement32(const int &elem, const int &k, int32_t* &p_data);
 	private:
 		TensorShape shape_;
 		std::vector<int8_t> data_;
+		int8_t* data_ptr_;
+		int32_t* data32_ptr_;
 		int elements_;
 		int k_stride_;
 	};

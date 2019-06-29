@@ -59,7 +59,7 @@ bool Convolution::execute(
 		for (int k = 0; k < weight_shape.k; ++k)
 		{
 			int8_t* p_wght = NULL;
-			int8_t* p_inpt = NULL;
+			int32_t* p_inpt = NULL;
 			int xi = 0;
 			int yi = 0;
 			int elem = 0;
@@ -94,10 +94,10 @@ bool Convolution::execute(
 							out_index = yo * width_out + xo;
 
 
-							input.GetElement(elem, 0, p_inpt);
+							input.GetElement32(elem, 0, p_inpt);
 
 							for (int c = 0; c < input_shape.c; ++c) {
-								accumulate[out_index] += (static_cast<int32_t>(p_inpt[c]) * static_cast<int32_t>(p_wght[c]));
+								accumulate[out_index] += p_inpt[c] * static_cast<int32_t>(p_wght[c]);
 							}
 						}
 					}
@@ -129,17 +129,17 @@ bool Convolution::execute(
 		for (int yo = 0; yo < width_out; ++yo)
 		{
 			int y_offset = yo * width_out;
-			int8_t* p_out = NULL;
+			int32_t* p_out = NULL;
 			int out_index = 0;
 			
 			for (int xo = 0; xo < width_out; ++xo)
 			{
 				out_index = y_offset + xo;
-				output.GetElement(out_index, 0, p_out);
+				output.GetElement32(out_index, 0, p_out);
 
 				for (int k = 0; k < output_shape.c; ++k)
 				{
-					p_out[k] = static_cast<int8_t>(accumulator[k][out_index]);
+					p_out[k] = static_cast<int32_t>(accumulator[k][out_index]);
 				}
 			}
 		}
