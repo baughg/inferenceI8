@@ -15,7 +15,8 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 	const TensorShape &input_shape = input.GetShape();
 	const int &stride = param.stride;
 	const int &kernelSize = param.kernel_shape.w;
-	int padding = param.padding;
+	const int pad_right_top = param.padding ? (kernelSize >> 1) : 0;
+	const int padding = 0;
 	TensorShape output_shape;
 
 	output_shape.h = static_cast<int>(ceil(static_cast<float>(
@@ -24,5 +25,49 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 	output_shape.w = static_cast<int>(ceil(static_cast<float>(
 		input_shape.w + 2 * padding - kernelSize) / stride)) + 1;
 
+	output_shape.c = input_shape.c;
+
+	output.SetShape(output_shape);
+
+	const int &W = output_shape.w;
+	const int &H = output_shape.h;
+	const int &C = output_shape.c;
+	int xi = 0;
+	int yi = 0;
+	int yOffset = 0;
+	int xOffset = 0;
+	int elem = 0;
+	int32_t* p_in = NULL;
+
+	for (int yo = 0; yo < H; ++yo)
+	{
+		yOffset = yo * stride;
+
+		for (int xo = 0; xo < W; ++xo)
+		{
+			xOffset = xo * stride;
+
+			for (int ky = 0; ky < kernelSize; ++ky)
+			{
+				yi = yOffset + ky;
+				
+				if (yi >= input_shape.h)
+					continue;
+
+				for (int kx = 0; kx < kernelSize; ++kx)
+				{
+					xi = xOffset + kx;
+
+					if (xi >= input_shape.w)
+						continue;
+
+					elem = yi * input_shape.w + xi;
+					input.GetElement32(elem, 0, p_in);
+
+
+				}
+			}
+		}
+	}
 	return true;
 }
