@@ -39,7 +39,7 @@ namespace GB {
 	class Tensor
 	{
 	public:
-		Tensor(int8_t* data_ptr = NULL);
+		Tensor(int8_t* data_ptr = NULL, bool i32word = false);
 		~Tensor();
 		void SetShape(TensorShape shape);
 		void FillRand();
@@ -51,6 +51,7 @@ namespace GB {
 		std::vector<int8_t> data_;
 		int8_t* data_ptr_;
 		int32_t* data32_ptr_;
+		bool i32_word_;
 		int elements_;
 		int k_stride_;
 	};

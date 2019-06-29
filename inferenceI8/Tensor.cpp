@@ -3,8 +3,9 @@
 
 using namespace GB;
 
-Tensor::Tensor(int8_t* data_ptr)
-	: data_ptr_(data_ptr)
+Tensor::Tensor(int8_t* data_ptr, bool i32word)
+	: data_ptr_(data_ptr),
+	i32_word_(i32word)
 {
 	data32_ptr_ = reinterpret_cast<int32_t*>(data_ptr_);
 }
@@ -20,7 +21,10 @@ void Tensor::SetShape(TensorShape shape)
 	elements_ = shape_.w * shape_.h;
 	k_stride_ = elements_ * shape_.c;
 
-	const int points = k_stride_ * shape_.k;
+	int points = k_stride_ * shape_.k;
+	
+	if (i32_word_)
+		points <<= 2;
 
 	if (!data_ptr_) {
 		data_.resize(points);

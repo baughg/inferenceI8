@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Convolution.h" />
     <ClInclude Include="MsTimer.h" />
+    <ClInclude Include="Pool.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tensor.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="Convolution.cpp" />
     <ClCompile Include="inferenceI8.cpp" />
     <ClCompile Include="MsTimer.cpp" />
+    <ClCompile Include="Pool.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Tensor.cpp" />
   </ItemGroup>
