@@ -3,6 +3,19 @@
 #include <vector>
 
 namespace GB {
+	typedef struct ChannelQuantisation
+	{
+		ChannelQuantisation()
+		{
+			scale = 1;
+			bias = 0;
+			right_shift = 14;
+		}
+		int scale;
+		int bias;
+		int right_shift;
+	}ChannelQuantisation;
+
 	typedef enum
 	{
 		TL_ZM,

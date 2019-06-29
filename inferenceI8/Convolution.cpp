@@ -110,8 +110,16 @@ bool Convolution::execute(
 			for (int o = 0; o < output_elements; ++o)
 			{
 				accumulate[o] += quant.bias;
-				accumulate[o] *= quant.scale;
-				accumulate[o] >>= quant.right_shift;
+				accumulate[o] *= quant.scale;				
+
+				int64_t scalem_stage_ext = static_cast<int64_t>(accumulate[o]) << 1;
+				int64_t round_stage = scalem_stage_ext >> quant.right_shift;				
+				int64_t round_stage_div = 0;
+				round_stage_div = (round_stage == -1) ? 0LL : round_stage;
+
+				int64_t scalem_stage_trunc = round_stage_div >> 1;
+				accumulate[o] = static_cast<int32_t>(scalem_stage_trunc);
+
 
 				if (accumulate[o] > param.clamp_high)
 					accumulate[o] = param.clamp_high;

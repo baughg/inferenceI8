@@ -81,6 +81,16 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 			
 			for (int c = 0; c < C; ++c)
 			{
+				ChannelQuantisation &quant = param.quantisation[c];
+				maxValue[c] += quant.bias;
+				maxValue[c] *= quant.scale;
+				maxValue[c] >>= quant.right_shift;
+
+				if (maxValue[c] > param.clamp_high)
+					maxValue[c] = param.clamp_high;
+				else if (maxValue[c] < param.clamp_low)
+					maxValue[c] = param.clamp_low;
+
 				p_out[c] = maxValue[c];				
 			}
 		}
