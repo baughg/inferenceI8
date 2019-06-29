@@ -8,7 +8,7 @@ namespace GB {
 		{
 			scale = 1;
 			bias = 0;
-			right_shift = 0;
+			right_shift = 14;
 		}
 		int scale;
 		int bias;
