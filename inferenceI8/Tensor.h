@@ -3,6 +3,32 @@
 #include <vector>
 
 namespace GB {
+	typedef struct {
+		int x;
+		int y;
+	}fm_dim_pair;
+
+	typedef struct
+	{
+		fm_dim_pair kernel;
+		fm_dim_pair stride;
+		fm_dim_pair padding;
+		fm_dim_pair paddingTopLeft;
+		fm_dim_pair paddingBottomRight;
+		fm_dim_pair dilation;
+	}LayerArgs;
+
+	typedef struct TensorContainer
+	{
+		TensorContainer()
+		{
+			rawData = NULL;
+		}
+
+		std::vector<size_t> dims;
+		void* rawData;
+	}TensorContainer;
+
 	typedef struct ChannelQuantisation
 	{
 		ChannelQuantisation()
