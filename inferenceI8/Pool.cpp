@@ -10,7 +10,34 @@ Pool::~Pool()
 {
 }
 
+void max_operation(const int32_t &a, int32_t &b)
+{
+	if (a > b)
+		b = a;
+}
+
+void avg_operation(const int32_t &a, int32_t &b)
+{
+	b += a;
+}
+
 bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
+{
+	fill_value_ = INT32_MIN;
+	return execute(input, output, param, max_operation);
+}
+
+bool Pool::avg_execute(Tensor &input, Tensor &output, PoolParam &param)
+{
+	fill_value_ = 0;
+	return execute(input, output, param, avg_operation);
+}
+
+bool Pool::execute(
+	Tensor &input, 
+	Tensor &output, 
+	PoolParam &param,
+	void(*f)(const int32_t &a, int32_t &b))
 {
 	const TensorShape &input_shape = input.GetShape();
 	const int &stride = param.stride;
@@ -47,7 +74,8 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 
 		for (int yo = 0; yo < H; ++yo)
 		{
-			std::fill(maxValue.begin(), maxValue.end(), INT32_MIN);
+			
+			std::fill(maxValue.begin(), maxValue.end(), fill_value_);
 			yOffset = yo * stride;
 
 			for (int ky = 0; ky < kernelSize; ++ky)
@@ -69,8 +97,7 @@ bool Pool::max_execute(Tensor &input, Tensor &output, PoolParam &param)
 
 					for (int c = 0; c < C; ++c)
 					{
-						if (p_in[c] > maxValue[c])
-							maxValue[c] = p_in[c];
+						f(p_in[c], maxValue[c]);						
 					}
 				}
 			}
