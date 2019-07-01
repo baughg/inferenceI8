@@ -1,4 +1,5 @@
 #include "Elementwise.h"
+#include <omp.h>
 
 using namespace GB;
 
@@ -22,6 +23,12 @@ bool Elementwise::execute(
 	ElopsParam &param,
 	void(*f)(const int32_t &a, const int32_t &b, int32_t &c ))
 {
+#ifdef _OPENMP	
+	int max_threads = 0;
+	max_threads = omp_get_max_threads();
+	omp_set_num_threads(max_threads);	
+#endif
+
 	const TensorShape &input_shape_a = input_a.GetShape();
 	const TensorShape &input_shape_b = input_b.GetShape();
 
@@ -33,29 +40,34 @@ bool Elementwise::execute(
 	output.SetShape(input_shape_a);
 
 	const int elem_count = input_shape_a.w * input_shape_b.h;
-	int32_t* p_a = NULL;
-	int32_t* p_b = NULL;
-	int32_t* p_out = NULL;
+	
 	const int Z = input_shape_a.c;
-
-	for (int elem = 0; elem < elem_count; ++elem)
+#pragma omp parallel default(none) shared(input_a,input_b,output,elem_count)
 	{
-		input_a.GetElement32(elem, 0, p_a);
-		input_b.GetElement32(elem, 0, p_b);
-		output.GetElement32(elem, 0, p_out);
-		int32_t sum = 0;
-
-		for (int z = 0; z < Z; ++z)
+#pragma omp for	schedule(dynamic) nowait
+		for (int elem = 0; elem < elem_count; ++elem)
 		{
-			f(p_a[z], p_b[z], sum);
-			
-			Tensor::Quantise(
-				sum,
-				param.quantisation[z],
-				param.clamp_high,
-				param.clamp_low);
+			int32_t* p_a = NULL;
+			int32_t* p_b = NULL;
+			int32_t* p_out = NULL;
 
-			p_out[z] = sum;
+			input_a.GetElement32(elem, 0, p_a);
+			input_b.GetElement32(elem, 0, p_b);
+			output.GetElement32(elem, 0, p_out);
+			int32_t sum = 0;
+
+			for (int z = 0; z < Z; ++z)
+			{
+				f(p_a[z], p_b[z], sum);
+
+				Tensor::Quantise(
+					sum,
+					param.quantisation[z],
+					param.clamp_high,
+					param.clamp_low);
+
+				p_out[z] = sum;
+			}
 		}
 	}
 	return true;
