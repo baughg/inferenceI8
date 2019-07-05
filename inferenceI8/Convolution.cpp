@@ -1,5 +1,6 @@
 #include "Convolution.h"
 #include <omp.h>
+#include <immintrin.h>
 
 using namespace GB;
 
@@ -21,11 +22,11 @@ bool Convolution::execute(
 	int max_threads = 0;
 	max_threads = omp_get_max_threads();
 	omp_set_num_threads(max_threads);
-//#pragma omp parallel
-//	{
-//		int tid = omp_get_thread_num();
-//		printf("Convolution Thread! #%d\n", tid);
-//	}
+	//#pragma omp parallel
+	//	{
+	//		int tid = omp_get_thread_num();
+	//		printf("Convolution Thread! #%d\n", tid);
+	//	}
 #endif  
 
 	const TensorShape input_shape = input.GetShape();
@@ -45,13 +46,13 @@ bool Convolution::execute(
 
 	TensorShape output_shape(width_out, height_out, weight_shape.k);
 	output.SetShape(output_shape);
-	
+
 	const int stride = input_shape.w;
-	
+
 	std::vector<std::vector<int32_t> > accumulator;
 	accumulator.resize(weight_shape.k);
-	const int output_elements = width_out*width_out;
-	
+	const int output_elements = width_out * width_out;
+
 
 #pragma omp parallel default(none) shared(weight_shape,accumulator,input,weight,param)
 	{
@@ -75,6 +76,11 @@ bool Convolution::execute(
 					w_elem += (kx + param.padding);
 
 					weight.GetElement(w_elem, k, p_wght);
+					std::vector<int32_t> wght(input_shape.c);
+
+					for (int c = 0; c < input_shape.c; ++c) {
+						wght[c] = static_cast<int32_t>(p_wght[c]);
+					}
 
 					for (int yo = 0; yo < width_out; ++yo)
 					{
@@ -95,9 +101,28 @@ bool Convolution::execute(
 
 
 							input.GetElement32(elem, 0, p_inpt);
+							int dot_elems = input_shape.c;
+ 
+							for (int c = 0; c < input_shape.c; c += 8) {
+								__m256i &a = *reinterpret_cast<__m256i*>(&p_inpt[c]);
+								__m256i &b = *reinterpret_cast<__m256i*>(&wght[c]);
+								__m256i out = _mm256_mullo_epi32(a, b);
+								int elems_sum = dot_elems > 8 ? 8 : dot_elems;
+																
+								__m256i prod = _mm256_xor_si256(out, out);
+								__m256i upper4 = prod;
 
-							for (int c = 0; c < input_shape.c; ++c) {
-								accumulate[out_index] += p_inpt[c] * static_cast<int32_t>(p_wght[c]);
+								memcpy(reinterpret_cast<void*>(&prod),
+									reinterpret_cast<const void*>(&out),
+									elems_sum * sizeof(int32_t));								
+
+								__m256i sumx = _mm256_hadd_epi32(prod, upper4);
+								__m256i sumx2 = _mm256_hadd_epi32(sumx, upper4);
+								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
+								int32_t reduction = sumx_ptr[0];														
+								reduction += sumx_ptr[4];							
+								accumulate[out_index] = reduction;
+								dot_elems -= elems_sum;
 							}
 						}
 					}
@@ -113,7 +138,7 @@ bool Convolution::execute(
 					accumulate[o],
 					quant,
 					param.clamp_high,
-					param.clamp_low);				
+					param.clamp_low);
 			}
 		}
 	}
@@ -128,7 +153,7 @@ bool Convolution::execute(
 			int y_offset = yo * width_out;
 			int32_t* p_out = NULL;
 			int out_index = 0;
-			
+
 			for (int xo = 0; xo < width_out; ++xo)
 			{
 				out_index = y_offset + xo;
