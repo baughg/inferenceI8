@@ -66,6 +66,8 @@ bool Convolution::execute(
 			int elem = 0;
 			int w_elem = 0;
 			int out_index = 0;
+			int yo_index_offset = 0;
+			int yi_index_offset = 0;
 
 			std::vector<int32_t> &accumulate = accumulator[k];
 			accumulate.resize(output_elements);
@@ -101,6 +103,9 @@ bool Convolution::execute(
 						if (yi < 0 || yi >= input_shape.h)
 							continue;
 
+						yo_index_offset = yo * width_out;
+						yi_index_offset = yi * stride;
+
 						for (int xo = 0; xo < width_out; ++xo)
 						{
 							xi = xo * param.stride + kx;
@@ -108,24 +113,25 @@ bool Convolution::execute(
 							if (xi < 0 || xi >= input_shape.w)
 								continue;
 
-							elem = yi * stride + xi;
-							out_index = yo * width_out + xo;
+							elem = yi_index_offset + xi;
+							out_index = yo_index_offset + xo;
 							input.GetElement32(elem, 0, p_inpt);							
+							int32_t reduction = 0;
 
 							for (int c = 0; c < input_shape.c; c += 8) {
 								__m256i &a = *reinterpret_cast<__m256i*>(&p_inpt[c]);
 								__m256i &b = *reinterpret_cast<__m256i*>(&wght[c]);
 								__m256i out = _mm256_mullo_epi32(a, b);
 								
-								__m256i prod = _mm256_and_si256(out, mask);														
-
+								__m256i prod = _mm256_and_si256(out, mask);	
 								__m256i sumx = _mm256_hadd_epi32(prod, zero);
 								__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
 								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
-								int32_t reduction = sumx_ptr[0];														
-								reduction += sumx_ptr[4];							
-								accumulate[out_index] = reduction;								
+								reduction += sumx_ptr[0];														
+								reduction += sumx_ptr[4];																
 							}
+
+							accumulate[out_index] += reduction;
 						}
 					}
 				}
