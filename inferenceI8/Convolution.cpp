@@ -84,6 +84,7 @@ bool Convolution::execute(
 			{
 				mask_ptr[e] = ~0;
 			}
+			uint32_t ygate = 0;
 
 			for (int ky = -param.padding; ky <= param.padding; ++ky) {
 				for (int kx = -param.padding; kx <= param.padding; ++kx) {
