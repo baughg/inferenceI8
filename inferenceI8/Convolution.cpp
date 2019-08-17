@@ -84,7 +84,9 @@ bool Convolution::execute(
 			{
 				mask_ptr[e] = ~0;
 			}
-			uint32_t ygate = 0;
+			int32_t ygate = 0;
+			int32_t xgate = 0;
+			int32_t gate = 0;
 
 			for (int ky = -param.padding; ky <= param.padding; ++ky) {
 				for (int kx = -param.padding; kx <= param.padding; ++kx) {
@@ -101,20 +103,24 @@ bool Convolution::execute(
 					for (int yo = 0; yo < width_out; ++yo)
 					{
 						yi = param.stride * yo + ky;
+						ygate = static_cast<int32_t>(yi < 0 || yi >= input_shape.h) ^ 0x1;
 
-						if (yi < 0 || yi >= input_shape.h)
-							continue;
-
+						/*if (yi < 0 || yi >= input_shape.h)
+							continue;*/
+						
+						yi *= ygate;
 						yo_index_offset = yo * width_out;
 						yi_index_offset = yi * stride;
 
 						for (int xo = 0; xo < width_out; ++xo)
 						{
 							xi = xo * param.stride + kx;
+							xgate = static_cast<int32_t>(xi < 0 || xi >= input_shape.w) ^ 0x1;
 
-							if (xi < 0 || xi >= input_shape.w)
-								continue;
-
+							/*if (xi < 0 || xi >= input_shape.w)
+								continue;*/
+							xi *= xgate;
+							gate = xgate * ygate;
 							elem = yi_index_offset + xi;
 							out_index = yo_index_offset + xo;
 							input.GetElement32(elem, 0, p_inpt);							
@@ -132,6 +138,7 @@ bool Convolution::execute(
 								reduction += (sumx_ptr[0] + sumx_ptr[4]);																						
 							}
 
+							reduction *= gate;
 							accumulatePtr[out_index] += reduction;
 						}
 					}
