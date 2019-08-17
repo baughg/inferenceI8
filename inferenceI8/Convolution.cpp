@@ -71,6 +71,7 @@ bool Convolution::execute(
 
 			std::vector<int32_t> &accumulate = accumulator[k];
 			accumulate.resize(output_elements);
+			int32_t* accumulatePtr = &accumulate[0];
 			__m256i zero = { 0,0,0,0 };
 			__m256i mask = _mm256_xor_si256(zero, zero);
 			zero = mask;
@@ -127,11 +128,10 @@ bool Convolution::execute(
 								__m256i sumx = _mm256_hadd_epi32(prod, zero);
 								__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
 								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
-								reduction += sumx_ptr[0];														
-								reduction += sumx_ptr[4];																
+								reduction += (sumx_ptr[0] + sumx_ptr[4]);																						
 							}
 
-							accumulate[out_index] += reduction;
+							accumulatePtr[out_index] += reduction;
 						}
 					}
 				}
@@ -143,7 +143,7 @@ bool Convolution::execute(
 			for (int o = 0; o < output_elements; ++o)
 			{
 				Tensor::Quantise(
-					accumulate[o],
+					accumulatePtr[o],
 					quant,
 					param.clamp_high,
 					param.clamp_low);
