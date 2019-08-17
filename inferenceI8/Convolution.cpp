@@ -169,7 +169,7 @@ bool Convolution::execute(
 
 				for (int k = 0; k < output_shape.c; ++k)
 				{
-					p_out[k] = static_cast<int32_t>(accumulator[k][out_index]);
+					p_out[k] = static_cast<int32_t>(accumulator[k][out_index]);					
 				}
 			}
 		}
