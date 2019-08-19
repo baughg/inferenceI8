@@ -146,6 +146,7 @@ bool Convolution::execute(
 			int32_t gate = 0;
 			std::vector<int32_t> wght(input_shape.c);
 			int32_t* p_wght_i32 = &wght[0];
+			uint32_t dpnt = 0;
 
 			for (int ky = -param.padding; ky <= param.padding; ++ky) {
 				for (int kx = -param.padding; kx <= param.padding; ++kx) {
@@ -178,29 +179,19 @@ bool Convolution::execute(
 							out_index = yo_index_offset + xo;
 							input.GetElement32(elem, 0, p_inpt);							
 							int32_t reduction = 0;
-#ifdef _WIN321
+#ifdef _SIMD_KERNEL
 							for (int c = 0; c < input_shape.c; c += 8) {
 								DotProduct8(
 									&p_inpt[c],
 									&p_wght_i32[c],
 									mask,
 									zero,
-									reduction);
-								/*__m256i &a = *reinterpret_cast<__m256i*>(p_inpt + c);
-								__m256i &b = *reinterpret_cast<__m256i*>(p_wght_i32 + c);
-								__m256i out = _mm256_mullo_epi32(a, b);
-								
-								__m256i prod = _mm256_and_si256(out, mask);	
-								__m256i sumx = _mm256_hadd_epi32(prod, zero);
-								__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
-								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);																
-
-								reduction += (sumx_ptr[0] + sumx_ptr[4]);		*/						
+									reduction);								
 							}
 #else
 							for (int c = 0; c < input_shape.c; c++) {
-								reduction += (p_inpt[c] * wght[c]);								
-							}
+								reduction += (p_inpt[c] * p_wght_i32[c]);
+							}							
 #endif
 
 							reduction *= gate;
