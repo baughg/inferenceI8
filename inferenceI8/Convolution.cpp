@@ -1,11 +1,14 @@
 #include "Convolution.h"
 #include <omp.h>
 #include <immintrin.h>
+#include <intrin.h>
 
 using namespace GB;
 
 
 Convolution::Convolution()
+	: mCycles(0),
+	mMACs(0)
 {
 }
 
@@ -17,7 +20,9 @@ Convolution::~Convolution()
 bool Convolution::execute(
 	Tensor &input, Tensor &weight, Tensor &output, ConvParam &param)
 {
-
+	register uint64_t t1, t2;
+	unsigned int ui = 0;
+	t1 = __rdtscp(&ui);
 #ifdef _OPENMP	
 	int max_threads = 0;
 	max_threads = omp_get_max_threads();
@@ -52,7 +57,9 @@ bool Convolution::execute(
 	std::vector<std::vector<int32_t> > accumulator;
 	accumulator.resize(weight_shape.k);
 	const int output_elements = width_out * width_out;
-
+	mMACs = input_shape.h * input_shape.w * input_shape.c * weight_shape.k;
+	mMACs *= (weight_shape.w * weight_shape.h);
+	mMACs /= (param.stride*param.stride);
 
 #pragma omp parallel default(none) shared(weight_shape,accumulator,input,weight,param)
 	{
@@ -104,10 +111,7 @@ bool Convolution::execute(
 					{
 						yi = param.stride * yo + ky;
 						ygate = static_cast<int32_t>(yi < 0 || yi >= input_shape.h) ^ 0x1;
-
-						/*if (yi < 0 || yi >= input_shape.h)
-							continue;*/
-						
+												
 						yi *= ygate;
 						yo_index_offset = yo * width_out;
 						yi_index_offset = yi * stride;
@@ -117,8 +121,6 @@ bool Convolution::execute(
 							xi = xo * param.stride + kx;
 							xgate = static_cast<int32_t>(xi < 0 || xi >= input_shape.w) ^ 0x1;
 
-							/*if (xi < 0 || xi >= input_shape.w)
-								continue;*/
 							xi *= xgate;
 							gate = xgate * ygate;
 							elem = yi_index_offset + xi;
@@ -183,5 +185,9 @@ bool Convolution::execute(
 		}
 	}
 
+	t2 = __rdtscp(&ui) - t1;
+	mCycles = t2;
+	mMACsPerCycle = static_cast<float>(mMACs) / static_cast<float>(mCycles);
+	mCyclesPerMAC = 1.0f / mMACsPerCycle;
 	return true;
 }

@@ -25,8 +25,13 @@ namespace GB {
 		Convolution();
 		~Convolution();
 		bool execute(Tensor &input, Tensor &weight, Tensor &output, ConvParam &param);
+		float GetMACsPerCycle() { return mMACsPerCycle; }
+		float GetCyclesPerMAC() { return mCyclesPerMAC; }
 	private:
-
+		uint64_t mCycles;
+		uint64_t mMACs;
+		float mMACsPerCycle;
+		float mCyclesPerMAC;
 	};
 }
 
