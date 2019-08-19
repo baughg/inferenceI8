@@ -178,7 +178,7 @@ bool Convolution::execute(
 							out_index = yo_index_offset + xo;
 							input.GetElement32(elem, 0, p_inpt);							
 							int32_t reduction = 0;
-#ifdef _WIN32
+#ifdef _WIN321
 							for (int c = 0; c < input_shape.c; c += 8) {
 								DotProduct8(
 									&p_inpt[c],
@@ -198,16 +198,8 @@ bool Convolution::execute(
 								reduction += (sumx_ptr[0] + sumx_ptr[4]);		*/						
 							}
 #else
-							for (int c = 0; c < input_shape.c; c += 8) {
-								__m256i &a = *reinterpret_cast<__m256i*>(&p_inpt[c]);
-								__m256i &b = *reinterpret_cast<__m256i*>(&wght[c]);
-								__m256i out = _mm256_mullo_epi32(a, b);
-
-								__m256i prod = _mm256_and_si256(out, mask);
-								__m256i sumx = _mm256_hadd_epi32(prod, zero);
-								__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
-								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
-								reduction += (sumx_ptr[0] + sumx_ptr[4]);
+							for (int c = 0; c < input_shape.c; c++) {
+								reduction += (p_inpt[c] * wght[c]);								
 							}
 #endif
 
