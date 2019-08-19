@@ -17,6 +17,24 @@ Convolution::~Convolution()
 {
 }
 
+inline void Convolution::DotProduct8(
+	int32_t* p_inpt,
+	int32_t* p_wght_i32,
+	const __m256i &mask,
+	const __m256i &zero,
+	int32_t &reduction)
+{
+	const __m256i &a = *reinterpret_cast<const __m256i*>(p_inpt);
+	const __m256i &b = *reinterpret_cast<const __m256i*>(p_wght_i32);
+	__m256i out = _mm256_mullo_epi32(a, b);
+
+	__m256i prod = _mm256_and_si256(out, mask);
+	__m256i sumx = _mm256_hadd_epi32(prod, zero);
+	__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
+	int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
+	reduction += (sumx_ptr[0] + sumx_ptr[4]);
+}
+
 bool Convolution::execute(
 	Tensor &input, Tensor &weight, Tensor &output, ConvParam &param)
 {
@@ -162,15 +180,22 @@ bool Convolution::execute(
 							int32_t reduction = 0;
 #ifdef _WIN32
 							for (int c = 0; c < input_shape.c; c += 8) {
-								__m256i &a = *reinterpret_cast<__m256i*>(&p_inpt[c]);
+								DotProduct8(
+									&p_inpt[c],
+									&p_wght_i32[c],
+									mask,
+									zero,
+									reduction);
+								/*__m256i &a = *reinterpret_cast<__m256i*>(p_inpt + c);
 								__m256i &b = *reinterpret_cast<__m256i*>(p_wght_i32 + c);
 								__m256i out = _mm256_mullo_epi32(a, b);
 								
 								__m256i prod = _mm256_and_si256(out, mask);	
 								__m256i sumx = _mm256_hadd_epi32(prod, zero);
 								__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
-								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
-								reduction += (sumx_ptr[0] + sumx_ptr[4]);																						
+								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);																
+
+								reduction += (sumx_ptr[0] + sumx_ptr[4]);		*/						
 							}
 #else
 							for (int c = 0; c < input_shape.c; c += 8) {

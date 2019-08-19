@@ -1,5 +1,6 @@
 #pragma once
 #include "Tensor.h"
+#include <immintrin.h>
 
 namespace GB {
 	typedef struct ConvParam
@@ -28,6 +29,12 @@ namespace GB {
 		float GetMACsPerCycle() { return mMACsPerCycle; }
 		float GetCyclesPerMAC() { return mCyclesPerMAC; }
 	private:
+		void DotProduct8(
+			int32_t* p_inpt,
+			int32_t* p_wght_i32,
+			const __m256i &mask,
+			const __m256i &zero,
+			int32_t &reduction);
 		uint64_t mCycles;
 		uint64_t mMACs;
 		float mMACsPerCycle;
