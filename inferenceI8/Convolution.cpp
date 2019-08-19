@@ -37,6 +37,7 @@ bool Convolution::execute(
 	const TensorShape input_shape = input.GetShape();
 	const TensorShape weight_shape = weight.GetShape();
 
+	
 	if (param.padding)
 		param.padding = weight_shape.w >> 1;
 
@@ -60,6 +61,37 @@ bool Convolution::execute(
 	mMACs = input_shape.h * input_shape.w * input_shape.c * weight_shape.k;
 	mMACs *= (weight_shape.w * weight_shape.h);
 	mMACs /= (param.stride*param.stride);
+
+	if (input_shape.c && 0) // CM conv.
+	{
+#pragma omp parallel default(none) shared(accumulator,output,width_out)
+		{
+#pragma omp for	schedule(dynamic) nowait
+			for (int yo = 0; yo < width_out; ++yo)
+			{
+				int y_offset = yo * width_out;
+				int32_t* p_out = NULL;
+				int out_index = 0;
+
+				for (int xo = 0; xo < width_out; ++xo)
+				{
+					out_index = y_offset + xo;
+					output.GetElement32(out_index, 0, p_out);
+
+					for (int k = 0; k < output_shape.c; ++k)
+					{
+						p_out[k] = 56;
+					}
+				}
+			}
+		}
+
+		t2 = __rdtscp(&ui) - t1;
+		mCycles = t2;
+		mMACsPerCycle = static_cast<float>(mMACs) / static_cast<float>(mCycles);
+		mCyclesPerMAC = 1.0f / mMACsPerCycle;
+		return true;
+	}
 
 #pragma omp parallel default(none) shared(weight_shape,accumulator,input,weight,param)
 	{
@@ -94,6 +126,8 @@ bool Convolution::execute(
 			int32_t ygate = 0;
 			int32_t xgate = 0;
 			int32_t gate = 0;
+			std::vector<int32_t> wght(input_shape.c);
+			int32_t* p_wght_i32 = &wght[0];
 
 			for (int ky = -param.padding; ky <= param.padding; ++ky) {
 				for (int kx = -param.padding; kx <= param.padding; ++kx) {
@@ -101,10 +135,9 @@ bool Convolution::execute(
 					w_elem += (kx + param.padding);
 
 					weight.GetElement(w_elem, k, p_wght);
-					std::vector<int32_t> wght(input_shape.c);
-
+										
 					for (int c = 0; c < input_shape.c; ++c) {
-						wght[c] = static_cast<int32_t>(p_wght[c]);
+						p_wght_i32[c] = static_cast<int32_t>(p_wght[c]);
 					}
 
 					for (int yo = 0; yo < width_out; ++yo)
@@ -127,10 +160,10 @@ bool Convolution::execute(
 							out_index = yo_index_offset + xo;
 							input.GetElement32(elem, 0, p_inpt);							
 							int32_t reduction = 0;
-
+#ifdef _WIN32
 							for (int c = 0; c < input_shape.c; c += 8) {
 								__m256i &a = *reinterpret_cast<__m256i*>(&p_inpt[c]);
-								__m256i &b = *reinterpret_cast<__m256i*>(&wght[c]);
+								__m256i &b = *reinterpret_cast<__m256i*>(p_wght_i32 + c);
 								__m256i out = _mm256_mullo_epi32(a, b);
 								
 								__m256i prod = _mm256_and_si256(out, mask);	
@@ -139,6 +172,19 @@ bool Convolution::execute(
 								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
 								reduction += (sumx_ptr[0] + sumx_ptr[4]);																						
 							}
+#else
+							for (int c = 0; c < input_shape.c; c += 8) {
+								__m256i &a = *reinterpret_cast<__m256i*>(&p_inpt[c]);
+								__m256i &b = *reinterpret_cast<__m256i*>(&wght[c]);
+								__m256i out = _mm256_mullo_epi32(a, b);
+
+								__m256i prod = _mm256_and_si256(out, mask);
+								__m256i sumx = _mm256_hadd_epi32(prod, zero);
+								__m256i sumx2 = _mm256_hadd_epi32(sumx, zero);
+								int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
+								reduction += (sumx_ptr[0] + sumx_ptr[4]);
+							}
+#endif
 
 							reduction *= gate;
 							accumulatePtr[out_index] += reduction;
