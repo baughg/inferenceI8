@@ -1,6 +1,7 @@
 #include "Tensor.h"
 #include <cmath>
 #include <stdlib.h>
+#include <cstdlib>
 
 using namespace GB;
 
