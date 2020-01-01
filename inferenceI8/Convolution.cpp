@@ -108,7 +108,7 @@ bool Convolution::execute(
 			__m256i zero = { 0,0,0,0 };
 			__m256i mask = _mm256_xor_si256(zero, zero);
 			zero = mask;
-#endif
+
 
 			uint32_t* mask_ptr = reinterpret_cast<uint32_t*>(&mask);
 			
@@ -118,6 +118,7 @@ bool Convolution::execute(
 			{
 				mask_ptr[e] = ~0;
 			}
+#endif
 			int32_t ygate = 0;
 			int32_t xgate = 0;
 			int32_t gate = 0;
