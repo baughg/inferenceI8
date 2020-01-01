@@ -46,10 +46,10 @@ bool Pool::execute(
 	const int padding = 0;
 	TensorShape output_shape;
 
-	output_shape.h = static_cast<int>(ceil(static_cast<float>(
+	output_shape.h = static_cast<int>(std::ceil(static_cast<float>(
 		input_shape.h + 2 * padding - kernelSize) / stride)) + 1;
 
-	output_shape.w = static_cast<int>(ceil(static_cast<float>(
+	output_shape.w = static_cast<int>(std::ceil(static_cast<float>(
 		input_shape.w + 2 * padding - kernelSize) / stride)) + 1;
 
 	output_shape.c = input_shape.c;
