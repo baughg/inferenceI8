@@ -21,6 +21,7 @@ Convolution::~Convolution()
 {
 }
 
+#ifdef _WIN32
 inline void Convolution::DotProduct8(
 	int32_t* p_inpt,
 	int32_t* p_wght_i32,
@@ -38,6 +39,7 @@ inline void Convolution::DotProduct8(
 	int32_t* sumx_ptr = reinterpret_cast<int32_t*>(&sumx2);
 	reduction += (sumx_ptr[0] + sumx_ptr[4]);
 }
+#endif
 
 bool Convolution::execute(
 	Tensor &input, Tensor &weight, Tensor &output, ConvParam &param)
@@ -102,9 +104,11 @@ bool Convolution::execute(
 			std::vector<int32_t> &accumulate = accumulator[k];
 			accumulate.resize(output_elements);
 			int32_t* accumulatePtr = &accumulate[0];
+#ifdef _WIN32
 			__m256i zero = { 0,0,0,0 };
 			__m256i mask = _mm256_xor_si256(zero, zero);
 			zero = mask;
+#endif
 
 			uint32_t* mask_ptr = reinterpret_cast<uint32_t*>(&mask);
 			

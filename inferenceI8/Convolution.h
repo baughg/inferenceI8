@@ -29,12 +29,14 @@ namespace GB {
 		float GetMACsPerCycle() { return mMACsPerCycle; }
 		float GetCyclesPerMAC() { return mCyclesPerMAC; }
 	private:
+#ifdef _WIN32
 		void DotProduct8(
 			int32_t* p_inpt,
 			int32_t* p_wght_i32,
 			const __m256i &mask,
 			const __m256i &zero,
 			int32_t &reduction);
+#endif
 		uint64_t mCycles;
 		uint64_t mMACs;
 		float mMACsPerCycle;
