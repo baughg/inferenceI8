@@ -1,4 +1,5 @@
 #include "Pool.h"
+#include <cmath>
 
 using namespace GB;
 
