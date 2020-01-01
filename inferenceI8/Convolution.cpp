@@ -79,38 +79,7 @@ bool Convolution::execute(
 	mMACs = input_shape.h * input_shape.w * input_shape.c * weight_shape.k;
 	mMACs *= (weight_shape.w * weight_shape.h);
 	mMACs /= (param.stride*param.stride);
-
-	if (input_shape.c && 0) // CM conv.
-	{
-#pragma omp parallel default(none) shared(accumulator,output,width_out)
-		{
-#pragma omp for	schedule(dynamic) nowait
-			for (int yo = 0; yo < width_out; ++yo)
-			{
-				int y_offset = yo * width_out;
-				int32_t* p_out = NULL;
-				int out_index = 0;
-
-				for (int xo = 0; xo < width_out; ++xo)
-				{
-					out_index = y_offset + xo;
-					output.GetElement32(out_index, 0, p_out);
-
-					for (int k = 0; k < output_shape.c; ++k)
-					{
-						p_out[k] = 56;
-					}
-				}
-			}
-		}
-
-		t2 = __rdtscp(&ui) - t1;
-		mCycles = t2;
-		mMACsPerCycle = static_cast<float>(mMACs) / static_cast<float>(mCycles);
-		mCyclesPerMAC = 1.0f / mMACsPerCycle;
-		return true;
-	}
-
+		
 #pragma omp parallel default(none) shared(weight_shape,accumulator,input,weight,param)
 	{
 #pragma omp for	schedule(dynamic) nowait
@@ -189,7 +158,7 @@ bool Convolution::execute(
 									reduction);								
 							}
 #else
-							for (int c = 0; c < input_shape.c; c++) {
+							for (int c = 0; c < input_shape.c; ++c) {
 								reduction += (p_inpt[c] * p_wght_i32[c]);
 							}							
 #endif
