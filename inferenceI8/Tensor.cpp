@@ -1,5 +1,6 @@
 #include "Tensor.h"
 #include <cmath>
+#include <stdlib.h>
 
 using namespace GB;
 
@@ -50,7 +51,7 @@ void Tensor::FillRand()
 
 		for (size_t p = 0; p < data_points; ++p)
 		{
-			rnd = rand() - (RAND_MAX >> 1);
+			rnd = std::rand() - (RAND_MAX >> 1);
 			neg = rnd < 0;
 			rnd &= 0xff;
 
@@ -63,7 +64,7 @@ void Tensor::FillRand()
 	else
 	{
 		for (size_t p = 0; p < data_size; ++p) {
-			v = rand() % 256;
+			v = std::rand() % 256;
 			data_[p] = vI8;
 		}
 	}
