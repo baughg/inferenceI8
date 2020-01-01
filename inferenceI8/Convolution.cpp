@@ -1,7 +1,11 @@
 #include "Convolution.h"
 #include <omp.h>
 #include <immintrin.h>
+#ifdef _WIN32
 #include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
 
 using namespace GB;
 
