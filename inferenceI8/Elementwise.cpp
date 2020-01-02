@@ -42,7 +42,7 @@ bool Elementwise::execute(
 	const int elem_count = input_shape_a.w * input_shape_b.h;
 	
 	const int Z = input_shape_a.c;
-#pragma omp parallel default(none) shared(f,input_a,input_b,output,elem_count,param)
+#pragma omp parallel default(none) shared(f,input_a,input_b,output,param)
 	{
 #pragma omp for	schedule(dynamic) nowait
 		for (int elem = 0; elem < elem_count; ++elem)
