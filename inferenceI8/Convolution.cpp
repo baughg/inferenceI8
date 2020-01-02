@@ -88,7 +88,7 @@ bool Convolution::execute(
 	const int K = weight_shape.k;
 	const int W = weight_shape.w;
 
-#pragma omp parallel default(none) shared(K,W,accumulator,input,weight,param,width_out)
+#pragma omp parallel default(none) shared(accumulator,input,weight,param,width_out)
 	{
 #pragma omp for	schedule(dynamic) nowait
 		for (int k = 0; k < K; ++k)
