@@ -85,11 +85,13 @@ bool Convolution::execute(
 	mMACs = input_shape.h * input_shape.w * input_shape.c * weight_shape.k;
 	mMACs *= (weight_shape.w * weight_shape.h);
 	mMACs /= (param.stride*param.stride);
-		
-#pragma omp parallel default(none) shared(weight_shape,accumulator,input,weight,param)
+	const int K = weight_shape.k;
+	const int W = weight_shape.w;
+
+#pragma omp parallel default(none) shared(K,W,accumulator,input,weight,param,width_out)
 	{
 #pragma omp for	schedule(dynamic) nowait
-		for (int k = 0; k < weight_shape.k; ++k)
+		for (int k = 0; k < K; ++k)
 		{
 			int8_t* p_wght = NULL;
 			int32_t* p_inpt = NULL;
@@ -128,7 +130,7 @@ bool Convolution::execute(
 
 			for (int ky = -param.padding; ky <= param.padding; ++ky) {
 				for (int kx = -param.padding; kx <= param.padding; ++kx) {
-					w_elem = (ky + param.padding) * weight_shape.w;
+					w_elem = (ky + param.padding) * W;
 					w_elem += (kx + param.padding);
 
 					weight.GetElement(w_elem, k, p_wght);
@@ -195,7 +197,7 @@ bool Convolution::execute(
 
 
 	// Write output	
-#pragma omp parallel default(none) shared(accumulator,output,width_out)
+#pragma omp parallel default(none) shared(output_shape,accumulator,output,width_out)
 	{
 #pragma omp for	schedule(dynamic) nowait
 		for (int yo = 0; yo < width_out; ++yo)
