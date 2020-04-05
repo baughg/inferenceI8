@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Convolution.h" />
+    <ClInclude Include="ConvolutionTask.h" />
     <ClInclude Include="Elementwise.h" />
     <ClInclude Include="MsTimer.h" />
     <ClInclude Include="Pool.h" />
@@ -157,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Convolution.cpp" />
+    <ClCompile Include="ConvolutionTask.cpp" />
     <ClCompile Include="Elementwise.cpp" />
     <ClCompile Include="inferenceI8.cpp" />
     <ClCompile Include="MsTimer.cpp" />
