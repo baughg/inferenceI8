@@ -7,6 +7,8 @@
 #include "Pool.h"
 #include "Elementwise.h"
 #include "MsTimer.h"
+#include "ConvolutionTask.h"
+
 using namespace GB;
 
 int main()
@@ -22,6 +24,9 @@ int main()
 	wgt.SetShape(wt_shape);
 	wgt.FillRand();
 
+	ConvolutionTask < int8_t, int32_t, 16> task{};
+	uint32_t wgt_set{ 0 };
+	create_task(task, act, wgt, wgt_set);
 	Convolution conv;
 	ConvParam param;
 	param.padding = 1;

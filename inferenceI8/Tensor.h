@@ -69,6 +69,10 @@ namespace GB {
 			layout = TL_ZM;
 		}
 
+		int DataPoints() const {
+			return w * h*c*k;
+		}
+
 		int w;
 		int h;
 		int c;
@@ -84,7 +88,7 @@ namespace GB {
 		void SetShape(TensorShape shape);
 		void FillRand();
 		TensorShape GetShape() const;
-		bool GetElement(const int &elem, const int &k, int8_t* &p_data);
+		bool GetElement(const int &elem, const int &k, int8_t* &p_data) const;
 		bool GetElement32(const int &elem, const int &k, int32_t* &p_data);
 		static void Quantise(
 			int32_t &q, 

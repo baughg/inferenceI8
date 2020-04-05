@@ -102,6 +102,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OpenMPSupport>false</OpenMPSupport>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Convolution.h" />
+    <ClInclude Include="Convolution.hpp" />
     <ClInclude Include="ConvolutionTask.h" />
     <ClInclude Include="Elementwise.h" />
     <ClInclude Include="MsTimer.h" />
@@ -158,7 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Convolution.cpp" />
-    <ClCompile Include="ConvolutionTask.cpp" />
     <ClCompile Include="Elementwise.cpp" />
     <ClCompile Include="inferenceI8.cpp" />
     <ClCompile Include="MsTimer.cpp" />

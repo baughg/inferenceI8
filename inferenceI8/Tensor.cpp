@@ -100,7 +100,7 @@ void Tensor::Quantise(
 		q = clamp_low;
 }
 
-bool Tensor::GetElement(const int &elem, const int &k,int8_t* &p_data)
+bool Tensor::GetElement(const int &elem, const int &k,int8_t* &p_data) const
 {
 	p_data = NULL;
 
