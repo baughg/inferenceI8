@@ -10,18 +10,24 @@ namespace GB {
 	{	
 	public:
 		template<typename D_Ty, typename Acc_Ty, std::size_t cstep>
-		friend void create_task(
+		friend std::size_t create_task(
 			ConvolutionTask<D_Ty, Acc_Ty, cstep> &task,
 			const Tensor &data,
 			const Tensor &kernel,
-			const uint32_t &output_channel);
-	private:
-		
+			const uint32_t &output_channel,
+			const ConvParam &param);
+	private:		
 		using Container = std::vector<Data_Ty>;
 		Container data_ {};
 		Container kernel_ {};
+		TensorShape shape_{};
 		const uint32_t channel_step_ { chnstep };
+		ChannelQuantisation quantisation_ {};
+		int stride_ {};
+		int padding_ {};
+		int clamp_high_ {};
+		int clamp_low_ {};
 	};
 }
 
-#include "Convolution.hpp"
+#include "ConvolutionTask.hpp"

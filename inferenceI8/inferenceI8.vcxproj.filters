@@ -42,7 +42,13 @@
     <ClInclude Include="ConvolutionTask.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Convolution.hpp">
+    <ClInclude Include="TensorStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConvolutionTask.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TensorStore.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

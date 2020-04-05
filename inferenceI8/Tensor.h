@@ -70,7 +70,7 @@ namespace GB {
 		}
 
 		int DataPoints() const {
-			return w * h*c*k;
+			return w*h*c*k;
 		}
 
 		int w;
@@ -91,7 +91,7 @@ namespace GB {
 		bool GetElement(const int &elem, const int &k, int8_t* &p_data) const;
 		bool GetElement32(const int &elem, const int &k, int32_t* &p_data);
 		static void Quantise(
-			int32_t &q, 
+			int32_t &q,
 			const ChannelQuantisation &quant,
 			const int &clamp_high,
 			const int &clamp_low);

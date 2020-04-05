@@ -8,6 +8,7 @@
 #include "Elementwise.h"
 #include "MsTimer.h"
 #include "ConvolutionTask.h"
+#include "TensorStore.h"
 
 using namespace GB;
 
@@ -15,8 +16,10 @@ int main()
 {
 	GB::Tensor act(NULL,true);
 	Tensor wgt;
-	TensorShape act_shape(224,224,3,1);
-	TensorShape wt_shape(7, 7, 3, 64);
+	/*TensorShape act_shape(224,224,3,1);
+	TensorShape wt_shape(7, 7, 3, 64);*/
+	TensorShape act_shape{ 56, 56, 64, 1 };
+	TensorShape wt_shape(3, 3, 64, 128);
 
 	act.SetShape(act_shape);
 	act.FillRand();
@@ -24,14 +27,25 @@ int main()
 	wgt.SetShape(wt_shape);
 	wgt.FillRand();
 
-	ConvolutionTask < int8_t, int32_t, 16> task{};
-	uint32_t wgt_set{ 0 };
-	create_task(task, act, wgt, wgt_set);
-	Convolution conv;
 	ConvParam param;
 	param.padding = 1;
 	param.stride = 2;
 	param.quantisation.resize(wt_shape.k);
+	auto t1{ from_Tensor<int8_t,16>(act) };
+	TensorStore<int32_t, 16> actI32{};
+	tensor_convert(t1, actI32);
+	const uint32_t channel_step{ 16 };
+	const uint32_t task_count{ static_cast<uint32_t>(wt_shape.k) };
+
+	std::vector<ConvolutionTask < int8_t, int32_t, channel_step>> tasks{ task_count };
+	std::size_t data_size{ 0 };
+
+	for (uint32_t wgt_set{ 0 }; wgt_set < task_count; ++wgt_set) {
+		data_size += create_task(
+			tasks[wgt_set], act, wgt, wgt_set, param);
+	}
+
+	Convolution conv;	
 	Tensor output(NULL,true);
 	MsTimer ms_timer;
 	ms_timer.start();
