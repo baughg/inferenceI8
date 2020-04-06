@@ -9,6 +9,7 @@ namespace GB {
 	class TensorStore
 	{
 	public:
+		enum Type { data, kernel };
 		template<typename D1_Ty, typename D2_Ty, std::size_t cstep>
 		friend void tensor_convert(
 			const TensorStore<D1_Ty, cstep> &t1, 
@@ -16,6 +17,7 @@ namespace GB {
 
 		template<typename D_Ty, std::size_t cstep>
 		friend TensorStore<D_Ty, cstep> from_Tensor(const Tensor &t1);
+		void reshape_for_compute(const ConvParam &param, Type type);
 	private:
 		using Container = std::vector<Data_Ty>;
 		Container data_ {};

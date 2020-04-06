@@ -11,6 +11,8 @@ namespace GB {
 			padding = 0;
 			clamp_high = 127;
 			clamp_low = -128;
+			kernel_x = 1;
+			kernel_y = 1;
 		}
 
 		std::vector<ChannelQuantisation> quantisation;
@@ -18,6 +20,8 @@ namespace GB {
 		int padding;
 		int clamp_high;
 		int clamp_low;
+		int kernel_x;
+		int kernel_y;
 	}ConvParam;
 
 	class Convolution

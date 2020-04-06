@@ -30,10 +30,14 @@ int main()
 	ConvParam param;
 	param.padding = 1;
 	param.stride = 2;
+	param.kernel_x = wt_shape.w;
+	param.kernel_y = wt_shape.h;
 	param.quantisation.resize(wt_shape.k);
-	auto t1{ from_Tensor<int8_t,16>(act) };
+	
 	TensorStore<int32_t, 16> actI32{};
-	tensor_convert(t1, actI32);
+	TensorStore<int32_t, 16> wgtI32{};
+	tensor_convert(from_Tensor<int8_t, 16>(act), actI32);
+	tensor_convert(from_Tensor<int8_t, 16>(wgt), wgtI32);
 	const uint32_t channel_step{ 16 };
 	const uint32_t task_count{ static_cast<uint32_t>(wt_shape.k) };
 
