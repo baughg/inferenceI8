@@ -38,6 +38,9 @@ int main()
 	TensorStore<int32_t, 16> wgtI32{};
 	tensor_convert(from_Tensor<int8_t, 16>(act), actI32);
 	tensor_convert(from_Tensor<int8_t, 16>(wgt), wgtI32);
+
+	actI32.reshape_for_compute(param, TensorStore<int32_t, 16>::data);
+
 	const uint32_t channel_step{ 16 };
 	const uint32_t task_count{ static_cast<uint32_t>(wt_shape.k) };
 
