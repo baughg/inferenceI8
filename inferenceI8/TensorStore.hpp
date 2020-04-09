@@ -3,9 +3,25 @@ namespace GB {
 	void TensorStore<Data_Ty, chnstep>::reshape_for_caching()
 	{
 		set_stride();
-		auto compute_steps{ shape_.c / channel_step_ };
+		compute_steps_ =  shape_.c / channel_step_;
 		const C{ elements_ * channel_step_ };
 
+		TensorStore<Data_Ty, chnstep> output{};
+		output.shape_ = TensorShape{ 1, compute_steps_, C, 1 };
+		output.data_.resize(output.shape_.DataPoints());
+		output.set_stride();
+		Data_Ty* data_ptr{};
+		Data_Ty* out_ptr{};
+
+		for (uint32_t cs{ 0 }; cs < compute_steps_; ++cs) {
+			const uint32_t data_offset{ cs*channel_step_ };
+			output.get_element(cs, 0, out_ptr);
+			for (uint32_t se{ 0 }; se < elements_; ++se) {
+				get_element(se, 0, data_ptr);
+				data_ptr += data_ptr;
+				out_ptr += channel_step_;
+			}
+		}
 	}
 
 	template<typename Data_Ty, std::size_t chnstep>

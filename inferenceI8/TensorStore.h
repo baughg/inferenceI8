@@ -29,6 +29,7 @@ namespace GB {
 		int elements_ {};
 		int k_stride_ {};
 		Data_Ty* data_ptr_{ nullptr };
+		int compute_steps_{};
 	};		
 }
 
