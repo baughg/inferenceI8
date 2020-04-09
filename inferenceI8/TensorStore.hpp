@@ -1,5 +1,14 @@
 namespace GB {
 	template<typename Data_Ty, std::size_t chnstep>
+	void TensorStore<Data_Ty, chnstep>::reshape_for_caching()
+	{
+		set_stride();
+		auto compute_steps{ shape_.c / channel_step_ };
+		const C{ elements_ * channel_step_ };
+
+	}
+
+	template<typename Data_Ty, std::size_t chnstep>
 	void TensorStore<Data_Ty, chnstep>::set_stride() {
 		elements_ = shape_.w * shape_.h;
 		k_stride_ = elements_ * shape_.c;
@@ -77,8 +86,8 @@ namespace GB {
 
 		for (auto ky = -padding_y; ky <= padding_y; ++ky) {
 			for (auto kx = -padding_x; kx <= padding_x; ++kx) {
-				w_elem = (ky + kernel_y) * kernel_x;
-				w_elem += (kx + kernel_x);
+				w_elem = (ky + padding_y) * kernel_x;
+				w_elem += (kx + padding_x);
 				w_elem *= shape_.c;
 				
 				for (int yo = 0; yo < width_out; ++yo)
@@ -110,6 +119,10 @@ namespace GB {
 				}
 			}
 		}
+
+		this->data_ = std::move(output.data_);
+		this->shape_ = std::move(output.shape_);
+		set_stride();
 	}
 
 	template<typename D1_Ty, typename D2_Ty, std::size_t cstep>

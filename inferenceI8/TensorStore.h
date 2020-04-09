@@ -18,6 +18,7 @@ namespace GB {
 		template<typename D_Ty, std::size_t cstep>
 		friend TensorStore<D_Ty, cstep> from_Tensor(const Tensor &t1);
 		void reshape_for_compute(const ConvParam &param, Type type);
+		void reshape_for_caching();
 		bool get_element(const int &elem, const int &k, Data_Ty* &p_data) const;
 		void set_stride();
 	private:
