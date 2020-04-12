@@ -1,6 +1,6 @@
 // inferenceI8.cpp : Defines the entry point for the console application.
 //
-
+#include <iostream>
 #include "stdafx.h"
 #include "Tensor.h"
 #include "Convolution.h"
@@ -9,6 +9,7 @@
 #include "MsTimer.h"
 #include "ConvolutionTask.h"
 #include "TensorStore.h"
+#include "PerformanceCounter.h"
 
 using namespace GB;
 
@@ -38,7 +39,8 @@ int main()
 	TensorStore<int32_t, 16> wgtI32{};
 	tensor_convert(from_Tensor<int8_t, 16>(act), actI32);
 	tensor_convert(from_Tensor<int8_t, 16>(wgt), wgtI32);
-
+	PerformanceCounter counter{};
+	counter.start();
 	actI32.reshape_for_compute(param, TensorStore<int32_t, 16>::data);
 	actI32.reshape_for_caching();
 	
@@ -52,6 +54,8 @@ int main()
 		data_size += create_task(
 			tasks[wgt_set], actI32, wgtI32, wgt_set, param);
 	}
+	counter.stop();
+	std::cout << counter << std::endl;
 
 	Convolution conv;	
 	Tensor output(NULL,true);

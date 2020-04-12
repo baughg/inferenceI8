@@ -36,4 +36,5 @@ std::ostream& GB::operator<<(std::ostream& os, const PerformanceCounter&counter)
 	freq /= 1.0e6;
 
 	os << elapsed_time << "ms, ticks: " << ticks << "freq: " << freq << "MHz" << '\n';
+	return os;
 }
