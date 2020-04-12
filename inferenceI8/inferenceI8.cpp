@@ -41,6 +41,7 @@ int main()
 
 	actI32.reshape_for_compute(param, TensorStore<int32_t, 16>::data);
 	actI32.reshape_for_caching();
+	
 	const uint32_t channel_step{ 16 };
 	const uint32_t task_count{ static_cast<uint32_t>(wt_shape.k) };
 

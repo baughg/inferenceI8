@@ -32,7 +32,7 @@ uint64_t MsTimer::stop()
 }
 
 
-int64_t MsTimer::elapsed()
+int64_t MsTimer::elapsed() const
 {
 	int64_t elapse_time = (int64_t)end_time_ - (int64_t)start_time_;
 	return elapse_time;

@@ -15,10 +15,10 @@ namespace GB {
 		MsTimer();
 		~MsTimer();
 		uint64_t get_time_ms();
-		uint64_t start();
-		uint64_t stop();
-		int64_t elapsed();
-	private:
+		virtual uint64_t start();
+		virtual uint64_t stop();
+		int64_t elapsed() const;
+	protected:
 		uint64_t start_time_;
 		uint64_t end_time_;
 	};

@@ -27,6 +27,7 @@ namespace GB {
 		}
 
 		this->data_ = std::move(output.data_);		
+		set_stride();
 	}
 
 	template<typename Data_Ty, std::size_t chnstep>
@@ -162,6 +163,8 @@ namespace GB {
 			*d2_iter = static_cast<D2_Ty>(*d1_iter);
 			d2_iter++;
 		}
+
+		t2.set_stride();
 	}
 
 	template<typename D_Ty, std::size_t cstep>
