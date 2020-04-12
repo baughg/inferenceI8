@@ -56,7 +56,9 @@ int main()
 	}
 
 	for (uint32_t r{ 0 }; r < 100; ++r) {
-		tasks[r].execute();
+		for (uint32_t wgt_set{ 0 }; wgt_set < task_count; ++wgt_set) {
+			tasks[r].execute();
+		}
 	}
 	counter.stop();
 	std::cout << counter << std::endl;
