@@ -44,12 +44,12 @@ int main()
 	const uint32_t channel_step{ 16 };
 	const uint32_t task_count{ static_cast<uint32_t>(wt_shape.k) };
 
-	std::vector<ConvolutionTask < int8_t, int32_t, channel_step>> tasks{ task_count };
+	std::vector<ConvolutionTask < int32_t, int32_t, channel_step>> tasks{ task_count };
 	std::size_t data_size{ 0 };
 
 	for (uint32_t wgt_set{ 0 }; wgt_set < task_count; ++wgt_set) {
 		data_size += create_task(
-			tasks[wgt_set], act, wgt, wgt_set, param);
+			tasks[wgt_set], actI32, wgtI32, wgt_set, param);
 	}
 
 	Convolution conv;	

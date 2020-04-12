@@ -24,8 +24,8 @@ namespace GB {
 
 		// Implement the interface of Tensor
 		TensorShape GetShape() const { return shape_; }
-		bool GetElement(const int &elem, const int &k, int8_t* &p_data) const {
-			return get_element(const int &elem, const int &k, int8_t* &p_data);
+		bool GetElement(const int &elem, const int &k, Data_Ty* &p_data) const {
+			return get_element(elem, k, p_data);
 		}
 	private:
 		using Container = std::vector<Data_Ty>;

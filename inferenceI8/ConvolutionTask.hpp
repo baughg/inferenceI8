@@ -1,10 +1,10 @@
 
 namespace GB {
-	template<typename D_Ty, typename Acc_Ty, typename Tensor_Ty, std::size_t chnstep>
+	template<typename D_Ty, typename Acc_Ty, std::size_t chnstep>
 	std::size_t create_task(
 		ConvolutionTask<D_Ty, Acc_Ty, chnstep> &task,
-		const Tensor_Ty &data,
-		const Tensor_Ty &kernel,
+		const TensorStore<D_Ty, chnstep> &data,
+		const TensorStore<D_Ty, chnstep> &kernel,
 		const uint32_t &output_channel,
 		const ConvParam &param) {
 		const auto data_shape{ data.GetShape() };
@@ -14,16 +14,16 @@ namespace GB {
 		task.data_.resize(data_shape.DataPoints());
 		task.kernel_.resize(kernel_size);
 
-		int8_t* data_ptr{ };
-		data.GetElement(0, 0, data_ptr);
+		D_Ty* data_ptr{ };
+		data.get_element(0, 0, data_ptr);
 
 		std::memcpy(
 			task.data_.data(), 
 			data_ptr, 
 			task.data_.size() * sizeof(D_Ty));
 
-		int8_t* kernel_ptr{ };
-		kernel.GetElement(0, output_channel, kernel_ptr);
+		D_Ty* kernel_ptr{ };
+		kernel.get_element(0, output_channel, kernel_ptr);
 
 		std::memcpy(
 			task.kernel_.data(),
