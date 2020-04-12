@@ -28,22 +28,22 @@ namespace GB {
 	void ConvolutionTask<Data_Ty, Accumulator_Ty, chnstep>::execute() {
 		const auto elements{ shape_.h * shape_.w };
 		//accumulator_.resize(elements);
-		Data_Ty* data_ptr{ data_ };
-		Data_Ty* kernel_ptr{ kernel_ };
-		Data_Ty* acc_ptr{};
+		Data_Ty* data_ptr{ data_ };		
+		Data_Ty* acc_ptr{ accumulator_.data() };
+		const auto C{ shape_.c };
+		
+		for (auto se{ 0 }; se < elements; ++se) {			
+			auto k_ptr{ kernel_ };
+			Accumulator_Ty acc{};
 
-		for (auto cs{ 0 }; cs < compute_steps_; ++cs) {
-			acc_ptr = accumulator_.data();
-			for (auto se{ 0 }; se < elements; ++se) {
-				auto k_ptr{ kernel_ptr };
-				Accumulator_Ty acc{};
-				for (int e = 0; e < channel_step_; ++e) {					
-					acc += data_ptr[e] * k_ptr[e];					
-				}
-				data_ptr += channel_step_;
-				*acc_ptr++ += acc;
+			for (int e{ 0 }; e < C; ++e) {
+				acc += data_ptr[e] * k_ptr[e];
 			}
-			kernel_ptr += channel_step_;
+			
+			data_ptr += C;
+			*acc_ptr++ += acc;
 		}
+
+
 	}
 }
