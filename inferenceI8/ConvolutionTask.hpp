@@ -35,10 +35,13 @@ namespace GB {
 		for (auto cs{ 0 }; cs < compute_steps_; ++cs) {
 			acc_ptr = accumulator_.data();
 			for (auto se{ 0 }; se < elements; ++se) {
-				for (int e = 0; e < channel_step_; ++e) {
-					*acc_ptr += *data_ptr++ * kernel_ptr[e];
+				auto k_ptr{ kernel_ptr };
+				Accumulator_Ty acc{};
+				for (int e = 0; e < channel_step_; ++e) {					
+					acc += data_ptr[e] * k_ptr[e];					
 				}
-				acc_ptr++;				
+				data_ptr += channel_step_;
+				*acc_ptr++ += acc;
 			}
 			kernel_ptr += channel_step_;
 		}
