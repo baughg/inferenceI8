@@ -1,10 +1,10 @@
 
 namespace GB {
-	template<typename D_Ty, typename Acc_Ty, std::size_t chnstep>
+	template<typename D_Ty, typename Acc_Ty, typename Tensor_Ty, std::size_t chnstep>
 	std::size_t create_task(
 		ConvolutionTask<D_Ty, Acc_Ty, chnstep> &task,
-		const Tensor &data,
-		const Tensor &kernel,
+		const Tensor_Ty &data,
+		const Tensor_Ty &kernel,
 		const uint32_t &output_channel,
 		const ConvParam &param) {
 		const auto data_shape{ data.GetShape() };

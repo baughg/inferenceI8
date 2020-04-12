@@ -9,11 +9,11 @@ namespace GB {
 	class ConvolutionTask
 	{	
 	public:
-		template<typename D_Ty, typename Acc_Ty, std::size_t cstep>
+		template<typename D_Ty, typename Acc_Ty, typename Tensor_Ty, std::size_t cstep>
 		friend std::size_t create_task(
 			ConvolutionTask<D_Ty, Acc_Ty, cstep> &task,
-			const Tensor &data,
-			const Tensor &kernel,
+			const Tensor_Ty &data,
+			const Tensor_Ty &kernel,
 			const uint32_t &output_channel,
 			const ConvParam &param);
 	private:		

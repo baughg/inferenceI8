@@ -14,17 +14,19 @@ namespace GB {
 		Data_Ty* out_ptr{};
 		const auto step_bytes{ sizeof(Data_Ty)*channel_step_ };
 
-		for (uint32_t cs{ 0 }; cs < compute_steps_; ++cs) {
-			const uint32_t data_offset{ cs*channel_step_ };
+		for (auto cs{ 0 }; cs < compute_steps_; ++cs) {
+			const auto data_offset{ cs*channel_step_ };
 			output.get_element(cs, 0, out_ptr);
 
-			for (uint32_t se{ 0 }; se < elements_; ++se) {
+			for (auto se{ 0 }; se < elements_; ++se) {
 				get_element(se, 0, data_ptr);
 				data_ptr += data_offset;
 				std::memcpy(out_ptr, data_ptr, step_bytes);
 				out_ptr += channel_step_;
 			}
 		}
+
+		this->data_ = std::move(output.data_);		
 	}
 
 	template<typename Data_Ty, std::size_t chnstep>
