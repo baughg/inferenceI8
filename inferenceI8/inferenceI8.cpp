@@ -19,8 +19,8 @@ int main()
 	Tensor wgt;
 	/*TensorShape act_shape(224,224,3,1);
 	TensorShape wt_shape(7, 7, 3, 64);*/
-	TensorShape act_shape{ 56, 56, 64, 1 };
-	TensorShape wt_shape(3, 3, 64, 128);
+	TensorShape act_shape{ 7, 7, 512, 1 };
+	TensorShape wt_shape(3, 3, 512, 512);
 
 	act.SetShape(act_shape);
 	act.FillRand();
@@ -30,7 +30,7 @@ int main()
 
 	ConvParam param;
 	param.padding = 1;
-	param.stride = 2;
+	param.stride = 1;
 	param.kernel_x = wt_shape.w;
 	param.kernel_y = wt_shape.h;
 	param.quantisation.resize(wt_shape.k);
@@ -54,6 +54,10 @@ int main()
 		data_size += create_task(
 			tasks[wgt_set], actI32, wgtI32, wgt_set, param);
 	}
+
+	for (uint32_t r{ 0 }; r < 100; ++r) {
+		tasks[r].execute();
+	}
 	counter.stop();
 	std::cout << counter << std::endl;
 
@@ -61,7 +65,9 @@ int main()
 	Tensor output(NULL,true);
 	MsTimer ms_timer;
 	ms_timer.start();
-	conv.execute(act, wgt, output, param);
+	for (uint32_t r{ 0 }; r < 100; ++r) {
+		conv.execute(act, wgt, output, param);
+	}
 	ms_timer.stop();
 	
 	TensorShape poolKernel(3,3,1,1);

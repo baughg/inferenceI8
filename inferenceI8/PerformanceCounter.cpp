@@ -32,9 +32,9 @@ std::ostream& GB::operator<<(std::ostream& os, const PerformanceCounter&counter)
 {
 	const auto ticks{ counter.stop_clock_tick_ - counter.start_clock_tick_ };
 	const auto elapsed_time{ counter.elapsed() };
-	float freq{ static_cast<float>(ticks) / (1000.0f * static_cast<float>(elapsed_time)) };
+	double freq{ static_cast<double>(ticks) / (1.0e-3 * static_cast<double>(elapsed_time)) };
 	freq /= 1.0e6;
 
-	os << elapsed_time << "ms, ticks: " << ticks << "freq: " << freq << "MHz" << '\n';
+	os << elapsed_time << "ms, ticks: " << ticks << " freq: " << freq << "MHz" << '\n';
 	return os;
 }

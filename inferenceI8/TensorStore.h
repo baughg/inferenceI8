@@ -27,6 +27,8 @@ namespace GB {
 		bool GetElement(const int &elem, const int &k, Data_Ty* &p_data) const {
 			return get_element(elem, k, p_data);
 		}
+		Data_Ty* get_data_pointer() const { return data_ptr_; }
+		int compute_steps() const { return compute_steps_; }
 	private:
 		using Container = std::vector<Data_Ty>;
 		Container data_ {};

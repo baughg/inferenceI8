@@ -16,10 +16,12 @@ namespace GB {
 			const TensorStore<D_Ty, cstep> &kernel,
 			const uint32_t &output_channel,
 			const ConvParam &param);
-	private:		
-		using Container = std::vector<Data_Ty>;
-		Container data_ {};
-		Container kernel_ {};
+		void execute();
+	private:	
+		using Container = std::vector<Accumulator_Ty>;
+		Data_Ty* data_ {};
+		Data_Ty* kernel_ {};
+		Container accumulator_{};
 		TensorShape shape_{};
 		const uint32_t channel_step_ { chnstep };
 		ChannelQuantisation quantisation_ {};
@@ -27,6 +29,7 @@ namespace GB {
 		int padding_ {};
 		int clamp_high_ {};
 		int clamp_low_ {};
+		int compute_steps_{};
 	};
 }
 
