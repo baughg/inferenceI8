@@ -1,6 +1,7 @@
 // inferenceI8.cpp : Defines the entry point for the console application.
 //
 #include <iostream>
+#include <omp.h>
 #include "stdafx.h"
 #include "Tensor.h"
 #include "Convolution.h"
@@ -55,9 +56,18 @@ int main()
 			tasks[wgt_set], actI32, wgtI32, wgt_set, param);
 	}
 
+#ifdef _OPENMP	
+	int max_threads = 0;
+	max_threads = omp_get_max_threads();
+	omp_set_num_threads(max_threads);	
+#endif 
 	for (uint32_t r{ 0 }; r < 100; ++r) {
-		for (uint32_t wgt_set{ 0 }; wgt_set < task_count; ++wgt_set) {
-			tasks[r].execute();
+#pragma omp parallel default(none) shared(task_count,tasks)
+		{
+#pragma omp for	schedule(dynamic) nowait
+			for (int32_t wgt_set{ 0 }; wgt_set < task_count; ++wgt_set) {
+				tasks[r].execute();
+			}
 		}
 	}
 	counter.stop();

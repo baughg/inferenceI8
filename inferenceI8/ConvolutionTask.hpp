@@ -19,13 +19,15 @@ namespace GB {
 		task.padding_ = param.padding;
 		task.clamp_low_ = param.clamp_low;
 		task.clamp_high_ = param.clamp_high;
+		const auto elements{ task.shape_.h * task.shape_.w };
+		task.accumulator_.resize(elements);
 		return 0;
 	}
 
 	template<typename Data_Ty, typename Accumulator_Ty, std::size_t chnstep>
 	void ConvolutionTask<Data_Ty, Accumulator_Ty, chnstep>::execute() {
 		const auto elements{ shape_.h * shape_.w };
-		accumulator_.resize(elements);
+		//accumulator_.resize(elements);
 		Data_Ty* data_ptr{ data_ };
 		Data_Ty* kernel_ptr{ kernel_ };
 		Data_Ty* acc_ptr{};
