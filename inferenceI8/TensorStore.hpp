@@ -4,7 +4,7 @@ namespace GB {
 	{
 		set_stride();
 		compute_steps_ =  shape_.c / channel_step_;
-		const C{ elements_ * channel_step_ };
+		const auto C{ elements_ * static_cast<int>(channel_step_) };
 
 		TensorStore<Data_Ty, chnstep> output{};
 		output.shape_ = TensorShape{ 1, compute_steps_, C, 1 };
@@ -12,13 +12,16 @@ namespace GB {
 		output.set_stride();
 		Data_Ty* data_ptr{};
 		Data_Ty* out_ptr{};
+		const auto step_bytes{ sizeof(Data_Ty)*channel_step_ };
 
 		for (uint32_t cs{ 0 }; cs < compute_steps_; ++cs) {
 			const uint32_t data_offset{ cs*channel_step_ };
 			output.get_element(cs, 0, out_ptr);
+
 			for (uint32_t se{ 0 }; se < elements_; ++se) {
 				get_element(se, 0, data_ptr);
-				data_ptr += data_ptr;
+				data_ptr += data_offset;
+				std::memcpy(out_ptr, data_ptr, step_bytes);
 				out_ptr += channel_step_;
 			}
 		}
