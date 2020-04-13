@@ -19,7 +19,8 @@ namespace GB {
 		task.padding_ = param.padding;
 		task.clamp_low_ = param.clamp_low;
 		task.clamp_high_ = param.clamp_high;
-		const auto elements{ task.shape_.h * task.shape_.w };
+		auto elements{ task.shape_.h * task.shape_.w };
+		elements = ((elements + 1) >> 1) << 1;
 		task.accumulator_.resize(elements);
 		return 0;
 	}
@@ -28,20 +29,27 @@ namespace GB {
 	void ConvolutionTask<Data_Ty, Accumulator_Ty, chnstep>::execute() {
 		const auto elements{ shape_.h * shape_.w };
 		//accumulator_.resize(elements);
-		Data_Ty* data_ptr{ data_ };		
+				
 		Data_Ty* acc_ptr{ accumulator_.data() };
 		const auto C{ shape_.c };
-		
-		for (auto se{ 0 }; se < elements; ++se) {			
+		Data_Ty* data_ptr{ data_ };
+		Data_Ty* data1_ptr{ data_ + C };
+		const auto c_stride{ C << 1 };
+
+		for (auto se{ 0 }; se < elements; se += 2) {			
 			auto k_ptr{ kernel_ };
 			Accumulator_Ty acc{};
+			Accumulator_Ty acc1{};
 
 			for (int e{ 0 }; e < C; ++e) {
 				acc += data_ptr[e] * k_ptr[e];
+				acc1 += data1_ptr[e] * k_ptr[e];
 			}
 			
-			data_ptr += C;
+			data_ptr += c_stride;
+			data1_ptr += c_stride;
 			*acc_ptr++ += acc;
+			*acc_ptr++ += acc1;
 		}
 
 
