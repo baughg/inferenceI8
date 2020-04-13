@@ -30,7 +30,7 @@ namespace GB {
 		const auto elements{ shape_.h * shape_.w };
 		//accumulator_.resize(elements);
 				
-		Data_Ty* acc_ptr{ accumulator_.data() };
+		Accumulator_Ty* acc_ptr{ accumulator_.data() };
 		const auto C{ shape_.c };
 		Data_Ty* data_ptr{ data_ };
 		Data_Ty* data1_ptr{ data_ + C };

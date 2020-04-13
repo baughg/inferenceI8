@@ -35,19 +35,20 @@ int main()
 	param.kernel_x = wt_shape.w;
 	param.kernel_y = wt_shape.h;
 	param.quantisation.resize(wt_shape.k);
-	
-	TensorStore<int32_t, 16> actI32{};
-	TensorStore<int32_t, 16> wgtI32{};
+	using Data_Ty = int32_t;
+
+	TensorStore<Data_Ty, 16> actI32{};
+	TensorStore<Data_Ty, 16> wgtI32{};
 	tensor_convert(from_Tensor<int8_t, 16>(act), actI32);
 	tensor_convert(from_Tensor<int8_t, 16>(wgt), wgtI32);
 	PerformanceCounter counter{};
 	counter.start();
-	actI32.reshape_for_compute(param, TensorStore<int32_t, 16>::data);
+	actI32.reshape_for_compute(param, TensorStore<Data_Ty, 16>::data);
 		
 	const uint32_t channel_step{ 16 };
 	const uint32_t task_count{ static_cast<uint32_t>(wt_shape.k) };
 
-	std::vector<ConvolutionTask < int32_t, int32_t, channel_step>> tasks{ task_count };
+	std::vector<ConvolutionTask < Data_Ty, int32_t, channel_step>> tasks{ task_count };
 	std::size_t data_size{ 0 };
 
 	for (uint32_t wgt_set{ 0 }; wgt_set < task_count; ++wgt_set) {
